@@ -1,0 +1,14 @@
+[Unit]
+Description=MexicoEn140 master collector service
+After=network.target
+ConditionPathExists=/opt/mexicoen140/AppPython/master_collector.py
+
+[Service]
+WorkingDirectory=/opt/mexicoen140/AppPython/
+ExecStart=/usr/bin/python master_collector.py
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+Alias=mexicoen140_master_collector.service
