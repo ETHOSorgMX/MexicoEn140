@@ -114,10 +114,9 @@ def fetch_tweets_from_list(owner_screen_name="MX_en140",\
 			#print "[get]:",len(new_statuses),"new statuses"
 			#print "\t\tfrom:", new_statuses[-1]["id"], "created at:", new_statuses[-1]["created_at"]
 			#print "\t\tto:", new_statuses[0]['id'], "created_at:", new_statuses[0]["created_at"]
-			logger.info("[get]:",len(new_statuses),"new statuses")
-			logger.info("\t\tfrom:", new_statuses[-1]["id"], "created at:", new_statuses[-1]["created_at"])
-			logger.info("\t\tto:", new_statuses[0]['id'], "created_at:", new_statuses[0]["created_at"])
-			
+			logger.info("[get]:" + str(len(new_statuses)) + " new statuses")
+			logger.info("\t\tfrom:" + str(new_statuses[-1]["id"]) + " created at:" + str(new_statuses[-1]["created_at"]))
+			logger.info("\t\tto:" + str(new_statuses[0]['id']) + " created_at:" + str(new_statuses[0]["created_at"]))			
 	
 	except Exception as e: 
 		logger.error(str(e))
@@ -272,16 +271,33 @@ if __name__ == '__main__':
 		pack_json = {}
 		pack_statuses = {}
 		all_batch = []
-		buffers = cPickle.load(open("buffers.cpk",'r'))
-		most_recent_ids = cPickle.load(open("mrids.cpk",'r'))
-		status_buff = cPickle.load(open('status.buff','r'))
+		try:
+			buffers = cPickle.load(open("buffers.cpk",'r'))
+		except Exception as e: 
+			logger.error("Error loading buffer.cpk: " +  str(e))
+			buffers={}
+		try:
+			most_recent_ids = cPickle.load(open("mrids.cpk",'r'))
+		except Exception as e: 
+			logger.error("Error loading mrids.cpk: " +  str(e))
+			most_recent_ids = {}
+		try:
+			status_buff = cPickle.load(open('status.buff','r'))
+		except Exception as e: 
+			logger.error("Error loading status.buff: " +  str(e))
+			status_buff = {}
 		
 		# fill from lists
 		for l in list_of_lists:
 			pack_json[l] = {}
+			default_since = "600000000000000000"
+			most_recent_ids.setdefault(l, default_since)
+
 			# get all available messages
+
+			#Adding 1 to slug for match with list name in twitter
 			batch = fetch_tweets_from_list(owner_screen_name="MX_en140",\
-										slug=l,\
+										slug=l + "1",\
 										include_entities="false",\
 										count="200",\
 										since_id=most_recent_ids[l],\
@@ -290,20 +306,31 @@ if __name__ == '__main__':
 			try:
 				most_recent_ids[l] = batch[-1]['id_str']
 			except:
+				logger.error('Can not get last index for: ' + l)
 				most_recent_ids[l] = most_recent_ids[l]
-			logger.debug("[batch]:" + str(l) + str(len(batch)) + str(most_recent_ids[l]))
+
+			logger.debug("[batch]: " + str(l) + " - " + str(len(batch)) + " - " + str(most_recent_ids[l]))
 		
 			# store on buffers
 			pack_statuses[l] = batch
 			all_batch.extend(batch)
 			new_texts = [s['text'].lower() for s in batch]
-			buffers[l].extend(new_texts)
+
+			try:
+				buffers[l].extend(new_texts)
+			except: 
+				buffers[l] = new_texts;
+
 			if ( len(buffers[l])>max_buffer_size ):
 				buffers[l] = buffers[l][-max_buffer_size:]
-			buffers['all'].extend(new_texts)
+			try:
+				buffers['all'].extend(new_texts)
+			except:
+				buffers['all'] = new_texts
+
 			if ( len(buffers['all'])>max_buffer_size ):
 				buffers['all'] = buffers['all'][-max_buffer_size:]
-			logger.debug("[buffer]:" + str(l) + str(len(buffers[l])) + str(len(new_texts)))
+			logger.debug("[buffer]: " + str(l) + " - " + str(len(buffers[l])) + " - " + str(len(new_texts)))
 
 			#count words
 			C = count_words(buffers[l], stopwords)
@@ -331,6 +358,7 @@ if __name__ == '__main__':
 					try:
 						status_buff[l][w].extend(lightbag)
 					except:
+						status_buff.setdefault(l, {});
 						status_buff[l][w] = lightbag
 					# crop status_buff
 					if len(status_buff[l][w])>max_status_buffsize: 
@@ -355,6 +383,7 @@ if __name__ == '__main__':
 				try:
 					status_buff['all'][w].extend(lightbag)
 				except:
+					status_buff.setdefault('all', {})
 					status_buff['all'][w] = lightbag
 				# crop status_buff
 				if len(status_buff['all'][w])>max_status_buffsize: 
@@ -373,7 +402,6 @@ if __name__ == '__main__':
 			if k==current_list: 
 				current_keyword = random.choice(pack_json[current_list].keys())
 			for w in status_buff[k].keys():
-				
 				if w in pack_json[k].keys():
 					containers[k][w] = []
 					# cross the array backwards and make containers
