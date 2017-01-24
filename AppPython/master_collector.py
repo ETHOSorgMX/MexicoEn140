@@ -78,7 +78,7 @@ def do_checkpath():
 	# pathchek
     global out_dir, NODE_PROJECT_PATH
     out_dir = "out/"
-    NODE_PROJECT_PATH = "./"
+    NODE_PROJECT_PATH = "../AppNode/"
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     if not os.path.exists(NODE_PROJECT_PATH): 
     	print 'Required Node_Project_Path for execution'
