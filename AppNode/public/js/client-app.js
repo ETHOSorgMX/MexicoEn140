@@ -26,6 +26,10 @@ var bubble = d3.layout.pack()
 
 // ---------------- ---------------- DRAW BUBBLES ----------------- --------------//
 function drawBubbles(newcat){
+    //Mark visit section google analitycs
+    ga('set', 'page', '/' + newcat + '.html');
+    ga('send', 'pageview');
+    //Ends by U8
     var bop = svg.selectAll('g')
         .data({}, function(d) {return d;});
         bop.exit().remove();
@@ -169,7 +173,7 @@ function changeCategory() {
     newcat = document.getElementById("categoria").value;
     console.log('[Updating to]: ' + newcat);
     drawBubbles(newcat);
-    }
+}
 
 
 
