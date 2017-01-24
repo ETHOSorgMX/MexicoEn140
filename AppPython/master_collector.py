@@ -41,25 +41,24 @@ def dual_login(app_data, user_data):
     login, oauthdance and creates .credential file for specified user
     """
     #DEBUG U8
-    logger.debug('APP_DATA authenticate twitter:')
-    logger.debug(app_data)
-    logger.debug('USER_DATA authenticate twitter:')
-    logger.debug(user_data)
+    #logger.debug('APP_DATA authenticate twitter:')
+    #logger.debug(app_data)
+    #logger.debug('USER_DATA authenticate twitter:')
+    #logger.debug(user_data)
     #END DEBUG U8
 
     APP_NAME = app_data['AN']
     CONSUMER_KEY = app_data['CK']
     CONSUMER_SECRET = app_data['CS']
     CREDENTIAL = '.'+user_data['UN']+'.credential'
+    #Autenthicate twitter Oauth
     try:
         (oauth_token, oauth_token_secret) = twitter.oauth.read_token_file(CREDENTIAL)
         logger.info('[Load]: %s' % CREDENTIAL)
-        #print '[Load]: %s' % CREDENTIAL
     except IOError, e:
         (oauth_token, oauth_token_secret) = twitter.oauth_dance(APP_NAME, CONSUMER_KEY, CONSUMER_SECRET)
         twitter.oauth.write_token_file(CREDENTIAL, oauth_token, oauth_token_secret)
         logger.info('[SAVE]: %s' % CREDENTIAL)
-        #print '[Save:] %s' % CREDENTIAL
     api1 = twitter.Twitter(domain='api.twitter.com', api_version='1.1',
         auth=twitter.oauth.OAuth(oauth_token, oauth_token_secret, CONSUMER_KEY, CONSUMER_SECRET))
     api2 = twython.Twython(CONSUMER_KEY, CONSUMER_SECRET, oauth_token, oauth_token_secret)
@@ -422,17 +421,6 @@ if __name__ == '__main__':
 					#form complete qtip content
 					containers[k][w] = titler.replace('TOKEN_H', w.upper()).replace('TOKEN_O',str(pack_json[k][w]))+'<hr>'+('\n'.join(containers[k][w]))+ender.replace('TOKEN_RW', related_words)
 		
-		#Debug U8
-		#print json.dumps(containers)
-		#print '----------'
-		#print json.dumps(pack_json)
-		#print '----------'
-		#print json.dumps(pack_statuses)
-
-		#raise SystemExit
-		# TODO: Change here 
-		# End Debug U8
-		
 		df = open(NODE_PROJECT_PATH + 'public/js/containers.js','w')
 
 		print >>df, "var tts = "+json.dumps(containers)+";"
@@ -450,40 +438,27 @@ if __name__ == '__main__':
 		cPickle.dump (most_recent_ids, open('mrids.cpk','w'))
 		cPickle.dump (status_buff, open('status.buff','w'))
 		logger.info("[saved]: pack.json, buffers.cpk, mrids.cpk, status.buff")
-		
-		# commit to github (requieres sudo git config --global credential.helper store + login para guardar credentials)
-		#os.chdir('../mx140')
-		#git.add('--all')
-		#git.commit('[*-*]/~ :: Monitor Mx140 V1.0 - '+time.asctime())
- 		#git.create_simple_git_command('push')()
-		#os.chdir('../collector')
-		#print "\n\n[git]: ok :: " , time.asctime() 
-		# then sleepover...
-		
-		#wait, publish something
-		#current_list, current_keyword, current_asoc_ws must be ready
-		#U8 Debug
-		#try:
-		#	current_status = u"El grupo de " + \
-		#				rlis[current_list].upper() + \
-		#				u" discute sobre "+ \
-		#				current_keyword.upper() +\
-		#				u" junto a [ " +\
-		#				current_asoc_ws[1] + " ] y [ " +\
-		#				current_asoc_ws[3] +\
-		#				u" ]. [+] en http://mexicoen140.org.mx"
-		#	if len(current_status)<127:
-		#		current_status+=u" #M\u00C9XICOen140"
-		#	ok_status = api01.statuses.update(status=current_status)
-		#	print "[--<]: %s" % (ok_status['text'])
-		#except twitter.TwitterHTTPError as e:
-		#	print "[x_X]: fuck :: %s" % e
-		#U8 Ends Debug
 
+		
+		try:
+			current_status = u"El grupo de " + \
+						rlis[current_list].upper() + \
+						u" discute sobre "+ \
+						current_keyword.upper() +\
+						u" junto a [ " +\
+						current_asoc_ws[1] + " ] y [ " +\
+						current_asoc_ws[3] +\
+						u" ]. [+] en http://mexicoen140.org.mx"
+			if len(current_status)<127:
+				current_status+=u" #M\u00C9XICOen140"
+			ok_status = api01.statuses.update(status=current_status)
+			logger.info("Status publish: " + current_status + str(ok_status['text']))
+		except twitter.TwitterHTTPError as e:
+			logger.error("Error publishing: " + current_status + " error: " + str(e))
 		current_keyword= ""
 		current_asoc_ws = []	
 
-		#now procceed
+		#now procceed to sleep to start again later
 		logger.info("[sleeping]:" + time.asctime())
 		print "[sleeping]:", time.asctime()
 		time.sleep(601)
