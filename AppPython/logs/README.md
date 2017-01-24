@@ -1,0 +1,1 @@
+This folder contains logs for python app

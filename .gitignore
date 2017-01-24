@@ -1,0 +1,7 @@
+AppNode/node_modules/
+AppNode/public/js/containers.js
+AppNode/public/js/data.js
+AppPython/logs/*.log
+AppPython/out/*.json
+AppPython/.mx140.dat
+AppPython/.MX_en140.credential
