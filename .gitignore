@@ -6,6 +6,7 @@ AppPython/*.cpk
 AppPython/*.buff
 AppPython/logs/*.log
 AppPython/out/*.json
+AppPython/pack.json
 AppPython/.mx140.dat
 AppPython/.MX_en140.credential
 AppPython/config.ini
