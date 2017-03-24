@@ -494,7 +494,7 @@ if __name__ == '__main__':
 							u" junto a [ " +\
 							current_asoc_ws[1] + " ] y [ " +\
 							current_asoc_ws[3] +\
-							u" ]. [+] en http://mexicoen140.org.mx"
+							u" ]. [+] en http://mexicoen140.org"
 				if len(current_status)<127:
 					current_status+=u" #M\u00C9XICOen140"
 				ok_status = api01.statuses.update(status=current_status)
