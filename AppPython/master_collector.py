@@ -21,7 +21,10 @@ from datetime import datetime
 from email.utils import parsedate_tz, mktime_tz
 from logging.handlers import RotatingFileHandler
 import smtplib
-import configparser
+try:
+    import configparser
+except:
+    from six.moves import configparser
 
 #Config logger configurations
 # create logger with 'master_collector'
@@ -492,15 +495,16 @@ if __name__ == '__main__':
 							u" discute sobre "+ \
 							current_keyword.upper() +\
 							u" junto a [ " +\
-							current_asoc_ws[1] + " ] y [ " +\
-							current_asoc_ws[3] +\
+							current_asoc_ws[0] + " ] y [ " +\
+							current_asoc_ws[1] +\
 							u" ]. [+] en http://mexicoen140.org"
 				if len(current_status)<127:
 					current_status+=u" #M\u00C9XICOen140"
 				ok_status = api01.statuses.update(status=current_status)
-				logger.info("Status publish: " + current_status + str(ok_status['text']))
+				logger.info("Status publish: " + str(current_status) + str(ok_status['text']))
 			except twitter.TwitterHTTPError as e:
-				logger.error("Error publishing: " + current_status + " error: " + str(e))
+				logger.error("Error publishing: " + str(current_status) + " error: " + str(e))
+				notifyByEmail("Error publishing: " + str(current_status) + " error: " + str(e))
 			current_keyword= ""
 			current_asoc_ws = []
 	else:
